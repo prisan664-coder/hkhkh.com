@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCBC Digital Bank - Marketing</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f1f3f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #0052cc;
+        }
+
+        nav a.navbar-brand {
+            color: #fff !important;
+            font-weight: bold;
+        }
+
+        nav .nav-link {
+            color: #fff !important;
+            font-weight: 500;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .marquee-text {
+            background: #0052cc;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-size: 1rem;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .table-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .images-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .image-box {
+            flex: 1 1 calc(50% - 10px);
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-box img {
+            width: 100px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 10px;
+        }
+
+        @media(max-width:768px) {
+            .image-box {
+                flex: 1 1 100%;
+            }
+
+            .marquee-text {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Map section */
+        .map-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 350px;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .bank-name {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #0052cc;
+        }
+
+        .footer {
+            background: #0052cc;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">OCBC Digital Bank</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="profile.html">Home</a></li>
+                <li class="nav-item active"><a class="nav-link" href="marketing.html">Marketing</a></li>
+                <li class="nav-item"><a class="nav-link text-warning" href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Carousel -->
+    <div id="marketingCarousel" class="carousel slide mt-3 container" data-ride="carousel">
+        <div class="carousel-inner rounded-lg">
+            <div class="carousel-item active"><img src="Image/Bank2.png" alt="Ad1"></div>
+            <div class="carousel-item"><img src="Image/Bank3.jpg" alt="Ad2"></div>
+            <div class="carousel-item"><img src="Image/Bank4.jpg" alt="Ad3"></div>
+        </div>
+    </div>
+
+    <!-- Marquee -->
+    <div class="marquee-text">Welcome to OCBC Digital Bank! Learn how to earn profit from purchasing currencies
+        securely.</div>
+
+    <!-- Profit Guide Text -->
+    <div class="container table-container">
+        <h5>How to Profit from Purchase Currencies</h5>
+        <p>Choose a currency and purchase it for a selected period. The longer the period, the higher the profit rate.
+            Ensure you have enough balance in your Profile before purchasing. All profits and transaction history will
+            be recorded in your Profile automatically.</p>
+        <ul style="list-style:none;padding-left:0;font-size:1rem;">
+            <li>🗓️ <strong>7 days</strong> – Receive <strong>7%</strong> instantly ✅</li>
+            <li>🗓️ <strong>1 month</strong> – Receive <strong>12%</strong> instantly 💵</li>
+            <li>🗓️ <strong>3 months</strong> – Receive <strong>18%</strong> instantly 💎</li>
+            <li>🗓️ <strong>6 months</strong> – Receive <strong>25%</strong> instantly 💹</li>
+            <li>🗓️ <strong>1 year</strong> – Receive <strong>30%</strong> instantly 🏦</li>
+            <li>🗓️ <strong>3 years</strong> – Receive <strong>40%</strong> instantly 🌟</li>
+        </ul>
+
+        <div class="container images-container">
+            <div class="image-box"><img src="Image/1.png" alt="Profit1"><span>Invest in USD and earn stable profits over
+                    time.</span></div>
+            <div class="image-box"><img src="Image/2.jpg" alt="Profit2"><span>EUR purchases offer moderate returns for
+                    1-3 months.</span></div>
+            <div class="image-box"><img src="Image/3.jpg" alt="Profit3"><span>JPY investments are safe for short-term
+                    gains.</span></div>
+            <div class="image-box"><img src="Image/4.png" alt="Profit4"><span>BTC can generate high returns but with
+                    higher risk.</span></div>
+        </div>
+    </div>
+
+    <!-- Google Map -->
+    <div class="container map-container">
+        <h5>📍 Bank Location</h5>
+        <iframe src="https://maps.google.com/maps?q=https://maps.app.goo.gl/9jEAF4C1ciRm22b8A&output=embed"></iframe>
+        <div class="bank-name">OCBC Digital Bank - Main Branch</div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer text-center py-3 mt-4">
+        © Copyright 2004 – 2025 – OCBC Bank. All Rights Reserved. Co. Reg. No.: 193200032W
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!loggedInUser) { alert("Please login first!"); window.location.href = "index.html"; }
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("loggedInUser");
+            window.location.href = "login.html";
+        });
+    </script>
+
+</body>
+
+</html>
