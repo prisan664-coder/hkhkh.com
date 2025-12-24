@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OCBC Admin - Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
-            font-family: "Poppins", sans-serif;
+            font-family: "Poppins", "Kanit", sans-serif;
             background: #f4f6f8;
             margin: 0;
             padding: 0;
@@ -70,7 +71,6 @@
             margin: 25px 0;
         }
 
-        /* สไตล์สำหรับรูปภาพ KYC */
         .kyc-img {
             width: 100px;
             height: 60px;
@@ -129,6 +129,11 @@
         .btn-edit {
             background: #17a2b8;
         }
+
+        /* ส่วนเน้นสำหรับรายการรออนุมัติ */
+        .pending-row {
+            background-color: #fffdf0;
+        }
     </style>
 </head>
 
@@ -140,6 +145,25 @@
     </header>
 
     <div class="container">
+
+        <h2 style="color: #d35400; border-color: #d35400;"><i class="fas fa-hand-holding-usd"></i> 0.
+            รายการรออนุมัติเงินฝาก (Pending Deposits)</h2>
+        <table id="pendingDepositTable">
+            <thead>
+                <tr>
+                    <th>Email สมาชิก</th>
+                    <th>จำนวนเงินที่ฝาก ($)</th>
+                    <th>วันที่ส่งคำขอ</th>
+                    <th>สถานะ</th>
+                    <th>จัดการอนุมัติเงิน</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5" style="text-align:center;">กำลังตรวจสอบรายการฝากเงิน...</td>
+                </tr>
+            </tbody>
+        </table>
 
         <h2><i class="fas fa-id-card-alt"></i> 1. ตารางตรวจสอบการยืนยันตัวตน (KYC Verification)</h2>
         <table id="kycListTable">
@@ -183,6 +207,7 @@
                     <th>ประเภท</th>
                     <th>จำนวน ($)</th>
                     <th>วันที่</th>
+                    <th>สถานะ</th>
                     <th>ลบ</th>
                 </tr>
             </thead>
@@ -193,7 +218,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDGZmA7ND52gIKsaUfjprUVW7QZdeU-Kf8",
@@ -208,7 +233,82 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- ส่วนการจัดการ KYC ---
+        // --------------------------------------------------
+        // 🆕 ฟังก์ชันอนุมัติเงินฝาก (Deposit Approval)
+        // --------------------------------------------------
+        window.approveDeposit = async (userKey, transId, amount) => {
+            if (confirm(`ยืนยันการอนุมัติเงินจำนวน $${amount} เข้าบัญชีสมาชิก?`)) {
+                try {
+                    // 1. ดึงยอดเงินปัจจุบันของสมาชิก
+                    const userSnap = await get(ref(db, `users/${userKey}`));
+                    if (userSnap.exists()) {
+                        const currentBalance = userSnap.val().balance || 0;
+                        const newBalance = currentBalance + parseFloat(amount);
+
+                        // 2. อัปเดตยอดเงินสมาชิก
+                        await update(ref(db, `users/${userKey}`), { balance: newBalance });
+
+                        // 3. เปลี่ยนสถานะธุรกรรมเป็น Success
+                        await update(ref(db, `transactions/${userKey}/${transId}`), { status: 'Success' });
+
+                        alert("อนุมัติเงินเรียบร้อยแล้ว ยอดเงินถูกเพิ่มเข้าบัญชีสมาชิกแล้วค่ะ");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("เกิดข้อผิดพลาดในการอนุมัติ");
+                }
+            }
+        };
+
+        window.rejectDeposit = (userKey, transId) => {
+            if (confirm("คุณต้องการปฏิเสธรายการฝากเงินนี้ใช่หรือไม่? (ยอดเงินจะไม่ถูกเพิ่ม)")) {
+                update(ref(db, `transactions/${userKey}/${transId}`), { status: 'Rejected' })
+                    .then(() => alert("ปฏิเสธรายการเรียบร้อยแล้ว"));
+            }
+        };
+
+        // 🆕 ดึงรายการที่สถานะเป็น "Pending" มาแสดงในตารางบนสุด
+        onValue(ref(db, 'transactions'), (snapshot) => {
+            const tbody = document.querySelector("#pendingDepositTable tbody");
+            tbody.innerHTML = "";
+            const allTrans = snapshot.val();
+            let hasPending = false;
+
+            if (allTrans) {
+                Object.keys(allTrans).forEach(userKey => {
+                    const transactions = allTrans[userKey];
+                    Object.keys(transactions).forEach(transId => {
+                        const record = transactions[transId];
+
+                        // แสดงเฉพาะรายการฝาก (Deposit) ที่ยังเป็น Pending
+                        if (record.type === "Deposit" && record.status === "Pending") {
+                            hasPending = true;
+                            const tr = document.createElement("tr");
+                            tr.className = "pending-row";
+                            tr.innerHTML = `
+                                <td>${userKey.replace(/_/g, '.')}</td>
+                                <td style="font-weight:bold; color:green;">$${parseFloat(record.amount).toLocaleString()}</td>
+                                <td>${record.date}</td>
+                                <td><span class="badge bg-warning">รอดำเนินการ</span></td>
+                                <td>
+                                    <button class="btn-action btn-approve" onclick="approveDeposit('${userKey}', '${transId}', ${record.amount})">อนุมัติเงิน</button>
+                                    <button class="btn-action btn-reject" onclick="rejectDeposit('${userKey}', '${transId}')">ปฏิเสธ</button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    });
+                });
+            }
+            if (!hasPending) {
+                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>ไม่มีรายการฝากเงินที่รออนุมัติ</td></tr>";
+            }
+        });
+
+        // --------------------------------------------------
+        // ส่วนการจัดการเดิม (KYC / Users / History)
+        // --------------------------------------------------
+
         window.updateKYCStatus = (emailKey, newStatus) => {
             const statusText = newStatus === 'Verified' ? 'อนุมัติ' : 'ปฏิเสธ';
             if (confirm(`คุณต้องการ ${statusText} ข้อมูลนี้ใช่หรือไม่?`)) {
@@ -217,7 +317,6 @@
             }
         };
 
-        // 1. ดึงข้อมูล KYC ลงตารางใหม่
         onValue(ref(db, 'verifications'), (snapshot) => {
             const tbody = document.querySelector("#kycListTable tbody");
             tbody.innerHTML = "";
@@ -227,7 +326,6 @@
                     const item = data[key];
                     const tr = document.createElement("tr");
                     let badgeColor = item.status === 'Verified' ? 'bg-success' : (item.status === 'Rejected' ? 'bg-danger' : 'bg-warning');
-
                     tr.innerHTML = `
                         <td>${key.replace(/_/g, '.')}</td>
                         <td>${item.firstName} ${item.lastName}</td>
@@ -247,7 +345,6 @@
             }
         });
 
-        // 2. ดึงข้อมูลสมาชิก (เดิม)
         onValue(ref(db, 'users'), (snapshot) => {
             const tbody = document.querySelector("#membersTable tbody");
             tbody.innerHTML = "";
@@ -270,7 +367,6 @@
             }
         });
 
-        // 3. ดึงธุรกรรม (เดิม)
         onValue(ref(db, 'transactions'), (snapshot) => {
             const tbody = document.querySelector("#allTransactionsTable tbody");
             tbody.innerHTML = "";
@@ -281,11 +377,13 @@
                     Object.keys(transactions).forEach(transId => {
                         const record = transactions[transId];
                         const tr = document.createElement("tr");
+                        let statusColor = record.status === 'Success' ? 'bg-success' : (record.status === 'Pending' ? 'bg-warning' : 'bg-danger');
                         tr.innerHTML = `
                             <td>${userKey.replace(/_/g, '.')}</td>
                             <td>${record.type}</td>
-                            <td>$${record.amount.toLocaleString()}</td>
+                            <td>$${parseFloat(record.amount).toLocaleString()}</td>
                             <td><small>${record.date}</small></td>
+                            <td><span class="badge ${statusColor}">${record.status || 'Success'}</span></td>
                             <td><button class="btn-reject" onclick="deleteTrans('${userKey}', '${transId}')"><i class="fas fa-trash"></i></button></td>
                         `;
                         tbody.appendChild(tr);
@@ -294,7 +392,6 @@
             }
         });
 
-        // ฟังก์ชันเสริม (ลบธุรกรรม / แก้ไขเงิน)
         window.editBalance = (key) => {
             const amt = prompt("ระบุยอดเงินใหม่:");
             if (amt) update(ref(db, `users/${key}`), { balance: parseFloat(amt) });
